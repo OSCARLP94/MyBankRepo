@@ -123,6 +123,9 @@
   <data name="EffectDateMayorCurrentDate" xml:space="preserve">
     <value>La fecha efectiva debe ser igual o mayor a fecha actual</value>
   </data>
+  <data name="MaxValueNotAllowed" xml:space="preserve">
+    <value>El valor solicitado no está permitido por este medio</value>
+  </data>
   <data name="NotEnoughtFunds" xml:space="preserve">
     <value>No tiene fondos suficientes</value>
   </data>
@@ -145,7 +148,7 @@
     <value>Error</value>
   </data>
   <data name="TransactionRequireDestinyProduct" xml:space="preserve">
-    <value>El tipo de transacción requiere producto origen</value>
+    <value>El tipo de transacción requiere producto destino</value>
   </data>
   <data name="TransactionRequireOriginProduct" xml:space="preserve">
     <value>El tipo de transacción requiere producto origen</value>

@@ -79,6 +79,15 @@ namespace BusinessDomain.DomainResources {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a El valor solicitado no está permitido por este medio.
+        /// </summary>
+        internal static string MaxValueNotAllowed {
+            get {
+                return ResourceManager.GetString("MaxValueNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a No tiene fondos suficientes.
         /// </summary>
         internal static string NotEnoughtFunds {
@@ -142,7 +151,7 @@ namespace BusinessDomain.DomainResources {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a El tipo de transacción requiere producto origen.
+        ///   Busca una cadena traducida similar a El tipo de transacción requiere producto destino.
         /// </summary>
         internal static string TransactionRequireDestinyProduct {
             get {

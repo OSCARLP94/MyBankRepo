@@ -18,6 +18,8 @@ namespace BusinessDomain.FluentValidations
             RuleFor(x => x.CauseTransaction).MaximumLength(200);
             RuleFor(x => x.Adittional).MaximumLength(200);
             RuleFor(x => x.Value).GreaterThan(0).WithMessage(Resource.ZeroNotAllowTransaction);
+            RuleFor(x => x.UserOrClient).NotEmpty();
+            RuleFor(x => x.Value).LessThan(999999999).WithMessage(Resource.MaxValueNotAllowed);
         }
 
         private bool EffectDateMayorCurrentDate(DateTime? effecDate)
