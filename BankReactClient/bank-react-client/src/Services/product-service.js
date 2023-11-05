@@ -3,6 +3,7 @@ import {ClientSettings} from "../clientsettings";
 import {ProductActions} from "../Redux/Actions/product-actions";
 import {AlertActions} from "../Redux/Actions/alert-actions";
 import { ConstValues } from "../clientsettings";
+
 async function GetListProductsClient(dispatch, userClient){
     try{
         var response = await ConsumeRoute.CallRoute(ClientSettings.UrlBaseInfoBankApi+"ProductInfo/InfoProductsByCient", {userClient: userClient}, "GET", null);
@@ -15,26 +16,36 @@ async function GetListProductsClient(dispatch, userClient){
 
         return null;
     }catch(err){
-        dispatch(AlertActions.showDanger("Error connecting or timeout service: "+err));
+        dispatch(AlertActions.showDanger("An error occurred while fetching the data: "+err));
     }
 }
 
-async function GetListTransactionsByParams(dispatch, userName, productNumber, maxCount=10, fromDate, untilDate, listTypeTransac){
+const GetListTransactionsByParams= async(userName, productNumber, maxCount=10, fromDate, untilDate)=>{
     try{
-        var objSearch = {clientUserName: userName, productNumber: productNumber, maxCount:maxCount, fromDate:fromDate, untilDate:untilDate, typeTransactions:listTypeTransac};
+        var objSearch = {clientUserName: userName, productNumber: productNumber, maxCount:maxCount, fromDate:fromDate, untilDate:untilDate, 
+            typeTransactions:[ConstValues.CodeDepositTransac, ConstValues.CodeFundsTransfTransac, ConstValues.CodeWithdrawTransac]};
+        
+        let route = ClientSettings.UrlBaseInfoBankApi+"ProductInfo/ListTransactionsClient";
+        let bearer = null;
 
-        var response = await ConsumeRoute.CallRoute(ClientSettings.UrlBaseInfoBankApi+"ProductInfo/ListTransactionsClient", objSearch, "POST", null);
-        await HandleResponseService(response, dispatch);
+        var response = await fetch(route,{
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + bearer,
+            },
+            //credentials: "include",
+            body: JSON.stringify(objSearch)
+        });
 
-        let json = await response.clone().json();
-        if (response.status == 200 && json.response === true && json.error === "") {
-            return json.data;
-        }
-
-        return null;
+        await HandleResponseServiceFetch(response);
+        
+        const data = await response.clone().json();
+        //console.log(data);
+        return data.data;
     }catch(err){
-        dispatch(AlertActions.showDanger("Error connecting or timeout service: "+err));
-        return null;
+        throw new Error("An error occurred while fetching the data: "+err);
     }
 }
 
@@ -53,7 +64,7 @@ async function CallWithdrawalTransaction(dispatch, userName, productNumber, effe
 
         return null;
     }catch(err){
-        dispatch(AlertActions.showDanger("Error connecting or timeout service: "+err));
+        dispatch(AlertActions.showDanger("An error occurred while fetching the data: "+err));
         return null;
     }
 }
@@ -73,7 +84,7 @@ async function CallDepositTransaction(dispatch, userName, productNumber, effectD
 
         return null;
     }catch(err){
-        dispatch(AlertActions.showDanger("Error connecting or timeout service: "+err));
+        dispatch(AlertActions.showDanger("An error occurred while fetching the data: "+err));
         return null;
     }
 }
@@ -93,38 +104,48 @@ async function CallFundsTransferTransaction(dispatch, userName, originProductNum
 
         return null;
     }catch(err){
-        dispatch(AlertActions.showDanger("Error connecting or timeout service: "+err));
+        dispatch(AlertActions.showDanger("An error occurred while fetching the data: "+err));
         return null;
     }
 }
 
-const HandleResponseService=async(response, dispatch)=>{
+const HandleResponseServiceFetch=async(response)=>{
     if(response.status==401)
-    {
-        dispatch(AlertActions.showDanger("Service denied - Credentials"))
-        return false
-    }
+        throw new Error("Service denied - Credentials");
 
-    if(response.status==404){
-        dispatch(AlertActions.showDanger("Service, URL not found"))
-        return false
-    }
-
+    if(response.status==404)
+        throw new Error("Service, URL not found");
+    
     let json = await response.clone().json()
-    if(response.status==400){
-        dispatch(AlertActions.showDanger("Service denied - Bad request: "+JSON.stringify(json)))
-        return false
-    }
+    if(response.status==400)
+        throw new Error("Service denied - Bad request: "+JSON.stringify(json));
 
-    if(json.successful !== true || json.message!==""){
-        dispatch(AlertActions.showDanger(json.message+json.error))
-        return false
-    } 
+    if(json.successful !== true || json.message!=="")
+        throw new Error(json.message+json.error);
 
-    if(json.error!==""){
-        dispatch(AlertActions.showDanger("Error response in Service - "+ json.error))
-        return false
-    }
+    if(json.error!=="")
+        throw new Error("Error response in Service - "+ json.error);
+
+    return true
+}
+
+const HandleResponseService=async(response)=>{
+    if(response.status==401)
+        throw new Error("Service denied - Credentials");
+
+    if(response.status==404)
+        throw new Error("Service, URL not found");
+    
+    let json = await response.clone().json()
+    if(response.status==400)
+        throw new Error("Service denied - Bad request: "+JSON.stringify(json));
+
+    if(json.successful !== true || json.message!=="")
+        throw new Error(json.message+json.error);
+
+    if(json.error!=="")
+        throw new Error("Error response in Service - "+ json.error);
+
     return true
 }
 

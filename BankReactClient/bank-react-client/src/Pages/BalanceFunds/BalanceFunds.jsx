@@ -16,6 +16,8 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
 import { ConstValues } from "../../clientsettings";
+import LinearProgress from "@mui/material/LinearProgress";
+
 //lazyload
 const TableTransactions = lazy(() =>
   import("../../Components/TableTransactions")
@@ -32,11 +34,16 @@ export default function BalanceFunds() {
 
   useEffect(() => {
     (async function () {
+      setIsLoading(true);
+
       dispatch(AlertActions.clear());
+      //cargar productos en redux
       await ProductService.GetListProductsClient(
         dispatch,
         ConstValues.DefaultUserTest
       );
+
+      setIsLoading(false);
     })();
   }, [dispatch]);
 
@@ -56,86 +63,97 @@ export default function BalanceFunds() {
           return value.productNumber == event.target.value;
         })
       );
-    setShowTransacSection(false);
   };
 
   return (
     <>
-      <Box sx={{ marginTop: "2%", minWidth: 120 }}>
-        <FormControl fullWidth>
-          <InputLabel id="demo-simple-select-label">Producto</InputLabel>
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            value={itemSelected}
-            label="Producto"
-            onChange={handleChangeSelectedProd}
-          >
-            {products !== undefined
-              ? products.map((item) => {
-                  return (
-                    <MenuItem
-                      key={item.productNumber}
-                      value={item.productNumber}
-                    >
-                      {item.typeProduct.name}({item.productNumber})
-                    </MenuItem>
-                  );
-                })
-              : null}
-          </Select>
-        </FormControl>
-      </Box>
-      <Divider variant="middle" />
-      <Box
-        sx={{
-          width: "100%", // Cambiado de 50% a 100%
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "2%",
-        }}
-      >
-        <Card sx={{ width: "100%" }}>
-          <CardContent>
-            <Typography
-              sx={{ fontSize: 16 }}
-              color="text.secondary"
-              gutterBottom
-            >
-              Tipo producto:{" "}
-              {productSelected !== null ? productSelected.typeProduct.name : ""}
-            </Typography>
-            <Typography variant="h4" component="div">
-              Saldo actual: ${" "}
-              {productSelected !== null
-                ? productSelected.moneyAccount.currentBalance
-                : ""}
-            </Typography>
-            <Typography sx={{ mb: 1.5 }} color="text.secondary">
-              # Cuenta:{" "}
-              {productSelected !== null ? productSelected.productNumber : ""}
-            </Typography>
-          </CardContent>
-          <CardActions>
-            <Button size="small" onClick={() => setShowTransacSection(true)}>
-              Transacciones
-            </Button>
-          </CardActions>
-        </Card>
-      </Box>
-      <Divider variant="middle" />
-      {showTransacSection ? (
-        <Suspense fallback={<CircularProgress />}>
+      {isLoading && <LinearProgress />}
+      {!isLoading && (
+        <>
           <Box sx={{ marginTop: "2%", minWidth: 120 }}>
-            <TableTransactions
-              clientUserName={ConstValues.DefaultUserTest}
-              productNumber={productSelected.productNumber}
-            />
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Producto</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={itemSelected}
+                label="Producto"
+                onChange={handleChangeSelectedProd}
+              >
+                {products !== undefined
+                  ? products.map((item) => {
+                      return (
+                        <MenuItem
+                          key={item.productNumber}
+                          value={item.productNumber}
+                        >
+                          {item.typeProduct.name}({item.productNumber})
+                        </MenuItem>
+                      );
+                    })
+                  : null}
+              </Select>
+            </FormControl>
           </Box>
-        </Suspense>
-      ) : null}
+          <Divider variant="middle" />
+          <Box
+            sx={{
+              width: "100%", // Cambiado de 50% a 100%
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "2%",
+            }}
+          >
+            <Card sx={{ width: "100%" }}>
+              <CardContent>
+                <Typography
+                  sx={{ fontSize: 16 }}
+                  color="text.secondary"
+                  gutterBottom
+                >
+                  Tipo producto:{" "}
+                  {productSelected !== null
+                    ? productSelected.typeProduct.name
+                    : ""}
+                </Typography>
+                <Typography variant="h4" component="div">
+                  Saldo actual: ${" "}
+                  {productSelected !== null
+                    ? productSelected.moneyAccount.currentBalance
+                    : ""}
+                </Typography>
+                <Typography sx={{ mb: 1.5 }} color="text.secondary">
+                  # Cuenta:{" "}
+                  {productSelected !== null
+                    ? productSelected.productNumber
+                    : ""}
+                </Typography>
+              </CardContent>
+              <CardActions>
+                {productSelected && <Button
+                  size="small"
+                  onClick={() => setShowTransacSection(true)}
+                >
+                  Transacciones
+                </Button>}
+              </CardActions>
+            </Card>
+          </Box>
+          <Divider variant="middle" />
+          {showTransacSection ? (
+            <Suspense fallback={<CircularProgress />}>
+              <Box sx={{ marginTop: "2%", minWidth: 120 }}>
+                <TableTransactions
+                  clientUserName={ConstValues.DefaultUserTest}
+                  productNumber={productSelected.productNumber}
+                />
+              </Box>
+            </Suspense>
+          ) : null}
+        </>
+      )}
 
       <AlertComp />
     </>
